@@ -9,9 +9,14 @@ public class Samurai : MonoBehaviour {
     private Rigidbody Corpo;
     private Animator Animar;
     public GameObject Ataque;
+
+    public int Vida = 10;
+    public bool vivo = true;
     
     //private SpriteRenderer Spritemario;
     private float velocidade=0;
+	private float moveHorizontal;
+	private float moveVertical;
     public float acel = -1;
     public float forcapulo=0;
     private bool nochao = false;
@@ -30,7 +35,10 @@ public class Samurai : MonoBehaviour {
 	
 	void Update () {
         //Chama a função de andar
-        Andar();
+        if (vivo == true)
+        {
+            Andar();
+        }
         
         //Chao();
         Foguear();
@@ -77,18 +85,29 @@ public class Samurai : MonoBehaviour {
         else
         {
             
+			
+			
+			
+			
+			float moveVertical = Input.GetAxis("Horizontal");
             velocidade = Input.GetAxis("Vertical");
-            Corpo.velocity = new Vector3(0, forcapulo, velocidade * 4);
+            Corpo.velocity = new Vector3(moveVertical*4, forcapulo, velocidade * 4);
+           float heading = Mathf.Atan2(moveVertical, velocidade) * Mathf.Rad2Deg;
+		    
 
-            if (velocidade != 0)
+
+            if (velocidade != 0 || moveVertical !=0)
             {
                 Animar.SetInteger("Mover", 1);
+                Corpo.rotation = Quaternion.Euler(0, heading, 0);
 
-                Debug.Log("ANDANDO");
+                
             }
             else
             {
                 Animar.SetInteger("Mover", 0);
+				
+				
             }
             Pular();
         }
@@ -108,92 +127,31 @@ public class Samurai : MonoBehaviour {
     }
     
 
-
-        /*
-    void Chao()
-    {
-
-        int layerMask = 1 << 12; // Layers utilizadas
-        ///O Ponto de Saida
-        float rodax = -0.08f; //essa variavel ajuda a rodar os pontos do pé
-        float px = 0; //ponto de origem X
-        float py = this.transform.position.y - 0.2f; // ponto de origem Y
-
-        while (rodax < 0.081f)
-        {
-            //lança raios no chão
-            RaycastHit hit = new RaycastHit();
-            //vai mudando a posição
-            px = this.transform.position.x + rodax;
-            //receber colisão
-            //recebe colisão - ponto inicial - direcção - distancia - camada
-            hit = Physics.Raycast(new Vector3(px + rodax, py, 0), Vector3.down, 0.17f, layerMask);
-            Debug.DrawLine(new Vector3(px + rodax, py, 0), new Vector3(px + rodax, py - 0.17f, 0), Color.red);
-            //incrementa
-            rodax = rodax + 0.01f;
-            //Retorna se encontrou algo
-            if (hit == true)
-            {
-                if(hit.collider.tag == "Inimigo")
-                {
-                    //Criar antes Public GameObject Casco no inicio do Codigo
-                    //Cria um Casco no Momento da morte do inimigo
-                    //Instantiate(Casco, hit.collider.gameObject.transform.position, Quaternion.identity);
-                    //Destroi o Inimigo
-                    Destroy(hit.collider.gameObject);
-                    //Adicionar uma força de pulo
-                    forcapulo = 1;
-                }
-                if (hit.collider.tag == "Chao")
-                {
-
-
-                    nochao = false;
-                    
-                    //forcapulo = 0;
-                    //Animar.SetBool("Pulo", false);
-
-                }
-                if (hit.collider.tag == "Casco")
-                {
-                    
-
-                    nochao = false;
-                    
-                }
-                //sai do loop se já tiver encontrado o chão
-                break;
-            }
-            else
-            {
-                Debug.Log("voando");
-                nochao = true;
-                //Animar.SetBool("Pulo", false);
-                //enautno não encontra chão fica como false
-                //nochao = false;
-            }
-        }
-    }*/
+    
 
 
     void OnTriggerEnter(Collider col)
     {
-        if (col.gameObject.tag == "checkpoint1")
-        {
-            PlayerPrefs.SetString("checkpoint", "checkpoint1");
-            Debug.Log("CHEGOUSUHSUHDUHS");
-        }
 
-        if (col.gameObject.tag == "bandeirafinal")
+        if (vivo == true)
         {
-           // GameObject.FindGameObjectWithTag("GameController").GetComponent<GameControl>().NovaFase();
-
+            if (col.gameObject.tag == "danoLobo")
+            {
+                Vida--;
+                if (Vida <= 0)
+                {
+                    vivo = false;
+                    Animar.SetInteger("Mover", 20);
+                }
+            }
         }
 
     }
 
         void OnCollisionEnter(Collision col)
     {
+
+       
         if (col.gameObject.tag == "Chao")
         {
             if (nochao == true)
